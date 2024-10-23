@@ -1,10 +1,15 @@
 import os
 import yaml
 import csv
+import json
+import pandas as pd
 
 # Set the parent directory containing the project folders
-parent_directory = "/Users/gomesf/Documents/code_projects/research_projects/github-actions-trends-analysis-main/projects" # Replace with the actual path to your projects directory
+parent_directory = "/Users/e9linda/Source/github-actions-trends-analysis/projects"
+#parent_directory = "/Users/gomesf/Documents/code_projects/research_projects/github-actions-trends-analysis-main/projects" # Replace with the actual path to your projects directory
 output_file = "workflow_analysis.csv"
+enriched_output_file = "enriched_analysis.csv"
+json_files = ['repo1.json', 'repo2.json']
 
 # Define the paths within each project for GitHub actions and workflows
 actions_subdir = ".github/actions"
@@ -67,6 +72,7 @@ def analyze_folder(folder_path):
                     total_nones += nones
 
     return yml_count, total_jobs, total_steps, total_nones
+ 
 
 # Open the CSV file for writing
 with open(output_file, 'w', newline='') as csvfile:
@@ -91,3 +97,56 @@ with open(output_file, 'w', newline='') as csvfile:
             csvwriter.writerow([project, workflow_ga, workflow_jobs, workflow_steps, workflow_nones, actions_ga, actions_jobs, actions_steps, actions_nones])
 
 print(f"CSV file created: {output_file}")
+
+#Function to enrich the project csv with metadata such as number of stars
+def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
+     # Load all the JSON files and combine them into a single list
+    combined_json_data = []
+
+    for json_file in json_files:
+        with open(json_file, 'r') as jf:
+            json_data = json.load(jf)
+            combined_json_data.extend(json_data)  # Add the contents of each JSON file to the combined list
+
+    # Load the CSV into a pandas DataFrame
+    df = pd.read_csv(csv_file)
+
+    # Define the columns we want to extract and add them if they don't exist
+    columns_to_add = ['commits', 'branches', 'totalPullRequests', 'contributors', 
+                      'totalIssues', 'stargazers', 'forks', 'watchers', 'mainLanguage']
+    
+    # Add these columns to the DataFrame if they don't exist
+    for col in columns_to_add:
+        if col not in df.columns:
+            df[col] = None  # Initialize the new column
+
+    # For each project in the first column of the CSV, add data from the combined JSON list
+    project_column = df.columns[0]
+
+    for index, csv_project in enumerate(df[project_column]):
+        # Iterate over each project in the combined JSON data
+        for project_data in combined_json_data:
+            json_project_name = project_data.get("name", "").split('/')[-1]  # Extract the project name after the "/"
+
+            if csv_project == json_project_name:
+                # Extract the relevant fields if there is a match
+                df.at[index, 'commits'] = project_data.get('commits')
+                df.at[index, 'branches'] = project_data.get('branches')
+                df.at[index, 'totalPullRequests'] = project_data.get('totalPullRequests')
+                df.at[index, 'contributors'] = project_data.get('contributors')
+                df.at[index, 'totalIssues'] = project_data.get('totalIssues')
+                df.at[index, 'stargazers'] = project_data.get('stargazers')
+                df.at[index, 'forks'] = project_data.get('forks')
+                df.at[index, 'watchers'] = project_data.get('watchers')
+
+                # Fetch the main language from the 'mainLanguage' field
+                df.at[index, 'mainLanguage'] = project_data.get('mainLanguage')
+                break  # Stop looking through JSON once a match is found
+
+
+    #Save the enriched CSV back to a file
+    df.to_csv(enriched_output_file, index=False)
+
+#Calling the enriching function.
+enrich_projects_with_metadata(output_file, json_files, enriched_output_file)
+print(f"CSV file updated: {enriched_output_file}")
