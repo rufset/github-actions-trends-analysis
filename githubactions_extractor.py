@@ -7,9 +7,15 @@ import pandas as pd
 # Set the parent directory containing the project folders
 parent_directory = "/Users/e9linda/Source/github-actions-trends-analysis/projects"
 #parent_directory = "/Users/gomesf/Documents/code_projects/research_projects/github-actions-trends-analysis-main/projects" # Replace with the actual path to your projects directory
+#output_file = "mini.csv"
 output_file = "workflow_analysis.csv"
 enriched_output_file = "enriched_analysis.csv"
+#enriched_output_file = "miniTest.csv"
+#json_files = ['mini1.json', 'mini2.json']
 json_files = ['repo1.json', 'repo2.json']
+
+#The code now: iterates over folders, creates a CSV and then enriches with data from the json. If data not available in CSV but is in JSON it adds the data.
+#The code should instead: add data from the seart query response json to CSV, then enrich this with data from folders IF there is anything there. If there isn't then they're not utilizing any actions. 
 
 # Define the paths within each project for GitHub actions and workflows
 actions_subdir = ".github/actions"
@@ -120,28 +126,50 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
         if col not in df.columns:
             df[col] = None  # Initialize the new column
 
-    # For each project in the first column of the CSV, add data from the combined JSON list
-    project_column = df.columns[0]
+    # Create a set of existing project names in the CSV to track which projects are already present
+    csv_projects = set(df[df.columns[0]].tolist())
 
-    for index, csv_project in enumerate(df[project_column]):
-        # Iterate over each project in the combined JSON data
-        for project_data in combined_json_data:
-            json_project_name = project_data.get("name", "").split('/')[-1]  # Extract the project name after the "/"
+    # For each project in the combined JSON list, enrich or add new rows to the CSV
+    new_rows = []  # List to hold new rows
+    for project_data in combined_json_data:
+        # Extract the project name from the "name" field in JSON
+        json_project_name = project_data.get("name", "").split('/')[-1]  # Extract the project name after the "/"
 
-            if csv_project == json_project_name:
-                # Extract the relevant fields if there is a match
-                df.at[index, 'commits'] = project_data.get('commits')
-                df.at[index, 'branches'] = project_data.get('branches')
-                df.at[index, 'totalPullRequests'] = project_data.get('totalPullRequests')
-                df.at[index, 'contributors'] = project_data.get('contributors')
-                df.at[index, 'totalIssues'] = project_data.get('totalIssues')
-                df.at[index, 'stargazers'] = project_data.get('stargazers')
-                df.at[index, 'forks'] = project_data.get('forks')
-                df.at[index, 'watchers'] = project_data.get('watchers')
+        # If the project is already in the CSV, enrich it
+        if json_project_name in csv_projects:
+            index = df[df[df.columns[0]] == json_project_name].index[0]
+            df.at[index, 'commits'] = project_data.get('commits')
+            df.at[index, 'branches'] = project_data.get('branches')
+            df.at[index, 'totalPullRequests'] = project_data.get('totalPullRequests')
+            df.at[index, 'contributors'] = project_data.get('contributors')
+            df.at[index, 'totalIssues'] = project_data.get('totalIssues')
+            df.at[index, 'stargazers'] = project_data.get('stargazers')
+            df.at[index, 'forks'] = project_data.get('forks')
+            df.at[index, 'watchers'] = project_data.get('watchers')
+            df.at[index, 'mainLanguage'] = project_data.get('mainLanguage')
 
-                # Fetch the main language from the 'mainLanguage' field
-                df.at[index, 'mainLanguage'] = project_data.get('mainLanguage')
-                break  # Stop looking through JSON once a match is found
+        # If the project is not in the CSV, add a new row - this is the part that makes the code produce the same result for Github data that are missing the empty folders. 
+        else:
+            # Prepare the new row
+            new_row = {
+                df.columns[0]: json_project_name,  # First column is the project name
+                'commits': project_data.get('commits'),
+                'branches': project_data.get('branches'),
+                'totalPullRequests': project_data.get('totalPullRequests'),
+                'contributors': project_data.get('contributors'),
+                'totalIssues': project_data.get('totalIssues'),
+                'stargazers': project_data.get('stargazers'),
+                'forks': project_data.get('forks'),
+                'watchers': project_data.get('watchers'),
+                'mainLanguage': project_data.get('mainLanguage')
+            }
+            new_rows.append(new_row)  # Add new row to the list
+
+    #If there are new rows, concatenate them to the DataFrame
+    if new_rows:
+        new_rows_df = pd.DataFrame(new_rows)  # Convert list of new rows to a DataFrame
+        df = pd.concat([df, new_rows_df], ignore_index=True)  # Concatenate the new rows
+
 
 
     #Save the enriched CSV back to a file
