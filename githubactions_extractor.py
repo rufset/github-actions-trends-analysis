@@ -106,7 +106,7 @@ print(f"CSV file created: {output_file}")
 
 #Function to enrich the project csv with metadata such as number of stars
 def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
-     # Load all the JSON files and combine them into a single list
+    # Load all the JSON files and combine them into a single list
     combined_json_data = []
 
     for json_file in json_files:
@@ -129,11 +129,19 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
     # Create a set of existing project names in the CSV to track which projects are already present
     csv_projects = set(df[df.columns[0]].tolist())
 
+    # Create an empty set to track which projects we've already processed from the JSON
+    processed_projects = set()  # Start with an empty set
+
     # For each project in the combined JSON list, enrich or add new rows to the CSV
     new_rows = []  # List to hold new rows
+
     for project_data in combined_json_data:
         # Extract the project name from the "name" field in JSON
         json_project_name = project_data.get("name", "").split('/')[-1]  # Extract the project name after the "/"
+
+        # Check if the project has already been processed from the JSON
+        if json_project_name in processed_projects:
+            continue  # Skip duplicates in the JSON data
 
         # If the project is already in the CSV, enrich it
         if json_project_name in csv_projects:
@@ -148,7 +156,7 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
             df.at[index, 'watchers'] = project_data.get('watchers')
             df.at[index, 'mainLanguage'] = project_data.get('mainLanguage')
 
-        # If the project is not in the CSV, add a new row - this is the part that makes the code produce the same result for Github data that are missing the empty folders. 
+        # If the project is not in the CSV, create a new row
         else:
             # Prepare the new row
             new_row = {
@@ -165,11 +173,13 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
             }
             new_rows.append(new_row)  # Add new row to the list
 
-    #If there are new rows, concatenate them to the DataFrame
+        # Mark this project as processed (only add JSON projects)
+        processed_projects.add(json_project_name)
+
+    # If there are new rows, concatenate them to the DataFrame
     if new_rows:
         new_rows_df = pd.DataFrame(new_rows)  # Convert list of new rows to a DataFrame
         df = pd.concat([df, new_rows_df], ignore_index=True)  # Concatenate the new rows
-
 
 
     #Save the enriched CSV back to a file
