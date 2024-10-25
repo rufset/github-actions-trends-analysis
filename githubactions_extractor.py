@@ -11,11 +11,11 @@ parent_directory = "/Users/e9linda/Source/github-actions-trends-analysis/project
 output_file = "workflow_analysis.csv"
 enriched_output_file = "enriched_analysis.csv"
 #enriched_output_file = "miniTest.csv"
-#json_files = ['mini1.json', 'mini2.json']
-json_files = ['repo1.json', 'repo2.json']
+json_files = ['repositories.json']
+#json_files = ['repo1.json', 'repo2.json']
 
 #The code now: iterates over folders, creates a CSV and then enriches with data from the json. If data not available in CSV but is in JSON it adds the data.
-#The code should instead: add data from the seart query response json to CSV, then enrich this with data from folders IF there is anything there. If there isn't then they're not utilizing any actions. 
+#I think the code should instead: add data from the seart query response json to CSV, then enrich this with data from folders IF there is anything there. If there isn't then they're not utilizing any actions. 
 
 # Define the paths within each project for GitHub actions and workflows
 actions_subdir = ".github/actions"
@@ -126,8 +126,8 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
         if col not in df.columns:
             df[col] = None  # Initialize the new column
 
-    # Create a set of existing project names in the CSV to track which projects are already present
-    csv_projects = set(df[df.columns[0]].tolist())
+    # Create a set of existing project names in the CSV (normalized to lowercase)
+    csv_projects = set(df[df.columns[0]].str.lower())  # Convert to lowercase for case-insensitive comparison
 
     # Create an empty set to track which projects we've already processed from the JSON
     processed_projects = set()  # Start with an empty set
@@ -136,8 +136,8 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
     new_rows = []  # List to hold new rows
 
     for project_data in combined_json_data:
-        # Extract the project name from the "name" field in JSON
-        json_project_name = project_data.get("name", "").split('/')[-1]  # Extract the project name after the "/"
+        # Extract the project name from the "name" field in JSON, normalize to lowercase
+        json_project_name = project_data.get("name", "").split('/')[-1].lower()  # Extract and convert to lowercase
 
         # Check if the project has already been processed from the JSON
         if json_project_name in processed_projects:
@@ -145,7 +145,8 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
 
         # If the project is already in the CSV, enrich it
         if json_project_name in csv_projects:
-            index = df[df[df.columns[0]] == json_project_name].index[0]
+            # Find the index of the project in the DataFrame (case-insensitive)
+            index = df[df[df.columns[0]].str.lower() == json_project_name].index[0]
             df.at[index, 'commits'] = project_data.get('commits')
             df.at[index, 'branches'] = project_data.get('branches')
             df.at[index, 'totalPullRequests'] = project_data.get('totalPullRequests')
@@ -160,7 +161,7 @@ def enrich_projects_with_metadata(csv_file, json_files, enriched_output_file):
         else:
             # Prepare the new row
             new_row = {
-                df.columns[0]: json_project_name,  # First column is the project name
+                df.columns[0]: project_data.get("name", "").split('/')[-1],  # Keep original case for CSV output
                 'commits': project_data.get('commits'),
                 'branches': project_data.get('branches'),
                 'totalPullRequests': project_data.get('totalPullRequests'),
