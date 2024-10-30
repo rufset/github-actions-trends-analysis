@@ -69,3 +69,5 @@ Thumbs.db
 main.pdf
 *.bbl
 inlaga.pdf
+.Rproj.user
+Rplots.*
