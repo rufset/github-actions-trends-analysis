@@ -1,11 +1,23 @@
 library(tidyverse)
+library(effsize)
 
 
 my_palette <- c("#eae4e9","#fff1e6","#fde2e4","#fad2e1","#e2ece9","#bee1e6","#f0efeb","#dfe7fd","#cddafd")
 my_palette <- c("#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff","#fde2e4")
 my_palette <- c("#303638","#f0c808","#5d4b20","#469374","#9341b3","#e3427d","#e68653","#ebe0b0","#edfbba")
 
-raw_data_df <- read.csv("./analysis data/enriched_analysis.csv")
+del_outliers_iqr <- function(data_df, column) {
+  filtered_df <- data_df %>% 
+    group_by(Group) %>% 
+    mutate(IQR = IQR(!!sym(column)),
+           O_upper = quantile(!!sym(column), probs=c( .75), na.rm = FALSE)+1.5*IQR,  
+           O_lower = quantile(!!sym(column), probs=c( .25), na.rm = FALSE)-1.5*IQR) %>% 
+    filter(O_lower <= !!sym(column) & !!sym(column) <= O_upper)
+  return(filtered_df)
+}
+
+raw_data_df <- read.csv("./analysis data/enriched_analysis.csv") %>% 
+  mutate(totalIssues = ifelse(is.na(totalIssues), 0, totalIssues))
 
 languages_df <- raw_data_df %>% 
   select(mainLanguage, workflow_ga) %>%
@@ -24,8 +36,7 @@ lang_plot <- ggplot(languages_df, aes(x = reorder(mainLanguage, -PercAdoption), 
   labs(y = "Perc. of GA Adoption", x = "Programming Languages") +
   theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none")
 
-ggsave(lang_plot, filename = "figs/LanguagePlot.pdf",
-       device = cairo_pdf(), width = 25, height = 12, units = "cm")
+#ggsave(lang_plot, filename = "figs/LanguagePlot.pdf", device = cairo_pdf(), width = 25, height = 12, units = "cm")
 
 ## Stargazers
 
@@ -53,8 +64,7 @@ stars_plot <- ggplot(summarised_stars_df, aes(x = reorder(Stars, MaxStars), y = 
   labs(y = "Perc. of GA Adoption", x = "Num. of Stars Per Sub-group") +
   theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none")
 
-ggsave(stars_plot, filename = "figs/StarsPlot.pdf",
-       device = cairo_pdf(), width = 25, height = 12, units = "cm")
+#ggsave(stars_plot, filename = "figs/StarsPlot.pdf",device = cairo_pdf(), width = 25, height = 12, units = "cm")
 
 ## Contributors  
 
@@ -79,5 +89,60 @@ contrib_plot <- ggplot(summarised_contrib_df, aes(x = MaxContrib, y = PercAdopti
   labs(y = "Perc. of GA Adoption", x = "Num. of Contributors Per Sub-group") +
   theme_bw() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none")
 
-ggsave(contrib_plot, filename = "figs/ContributorPlot.pdf",
-       device = cairo_pdf(), width = 25, height = 12, units = "cm")
+#ggsave(contrib_plot, filename = "figs/ContributorPlot.pdf",device = cairo_pdf(), width = 25, height = 12, units = "cm")
+
+
+# Comparison of projects_
+# Table 1: Descriptive statistics. See
+
+attributes_df <- raw_data_df %>% 
+  mutate(Group = ifelse(workflow_ga == 0, "Without", "With")) %>% 
+  select(Group, 
+         "Pull.Requests" = totalPullRequests, "Contributors" = contributors, 
+         "Commits" = commits, "Issues" = totalIssues, "Starts" = stargazers, "Forks" = forks) %>% 
+  gather(key = "Variable", value = "Value", -Group)
+
+summ_attr_df <- attributes_df %>% 
+  group_by(Variable, Group) %>% 
+  summarise(Median = median(Value), Avg = round(mean(Value),1),
+            SD = round(sd(Value),1))
+
+p_df <- data.frame()
+variables <- unique(attributes_df$Variable)
+for(variable in variables) {
+  print(paste("Calculating p-value for ", variable))
+  temp <- attributes_df %>% filter(Variable == variable)
+  p <- wilcox.test(Value ~ Group, data = temp)$p.value
+  c.delta <- cliff.delta(Value ~ Group, data = temp)
+  
+  row <- data.frame("Variable" = variable, "P.Value" = p, 
+                    "Cliff.Delta" = c.delta$estimate, "Eff.Size" = c.delta$magnitude)
+  print(row)
+  p_df <- bind_rows(p_df, row)
+}
+
+p_df <- p_df %>% 
+  mutate(Adj.P.Value = p.adjust(P.Value, method = "bonferroni"))
+
+
+table_df <- summ_attr_df %>% 
+  select(Variable, Group, Median) %>% 
+  pivot_wider(names_from = Group,
+              names_sep = ".", 
+              values_from = Median) %>% 
+  left_join(., p_df, by = "Variable")
+
+
+column = "stargazers"
+with_ga <- raw_data_df %>% 
+  filter(workflow_ga > 0) %>% 
+  mutate(IQR = IQR(!!sym(column)),
+         O_upper = quantile(!!sym(column), probs=c( .75), na.rm = FALSE)+1.5*IQR,  
+         O_lower = quantile(!!sym(column), probs=c( .25), na.rm = FALSE)-1.5*IQR) %>% 
+  filter(O_lower <= !!sym(column) & !!sym(column) <= O_upper)
+
+ggplot(with_ga, aes(x = workflow_ga, y = stargazers)) +
+  geom_jitter(alpha = 0.8) +
+  geom_smooth(method='lm')
+
+write.csv(table_df, file = "table_media.csv")
