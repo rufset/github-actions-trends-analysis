@@ -1,1 +1,0 @@
-Please don't send pull-requests for translation. Use the [Crowdin](https://crowdin.com/project/captura) project instead.

@@ -1,1 +1,0 @@
-See https://square.github.io/leakcanary/support

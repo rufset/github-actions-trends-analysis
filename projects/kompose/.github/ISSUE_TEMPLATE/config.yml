@@ -1,5 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: Kubernetes Community Slack
-    url: https://kubernetes.slack.com
-    about: "Use the #kompose channel"

@@ -1,9 +1,0 @@
-title: "[Question]: "
-labels: ["question"]
-body:
-  - type: textarea
-    id: description
-    attributes:
-      label: "What is your question:"
-    validations:
-      required: true

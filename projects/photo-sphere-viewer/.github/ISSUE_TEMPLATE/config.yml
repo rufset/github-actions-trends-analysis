@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: '💬 General'
-    url: https://github.com/mistic100/Photo-Sphere-Viewer/discussions/new?category=general
-    about: General discussion outside bugs, features and support
-  - name: '🙌 Show and tell'
-    url: https://github.com/mistic100/Photo-Sphere-Viewer/discussions/new?category=show-and-tell
-    about: Show off something you've made

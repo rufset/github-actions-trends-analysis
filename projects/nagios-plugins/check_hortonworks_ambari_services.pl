@@ -1,1 +1,0 @@
-check_ambari_services.pl

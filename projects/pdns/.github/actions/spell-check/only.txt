@@ -1,3 +1,0 @@
-/docs/
-^docs/
-pdns/recursordist/settings/table.py

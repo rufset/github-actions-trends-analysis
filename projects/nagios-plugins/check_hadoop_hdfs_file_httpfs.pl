@@ -1,1 +1,0 @@
-check_hadoop_hdfs_httpfs.pl

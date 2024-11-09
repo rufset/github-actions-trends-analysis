@@ -1,8 +1,0 @@
-{
-  "labels": {
-    "type: ci": [".github/workflows/**"],
-    "type: example": ["docs/src/docs/examples/**"],
-    "type: documentation": ["docs/**"],
-    "type: unform": ["packages/**"]
-  }
-}

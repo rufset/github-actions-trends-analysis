@@ -1,1 +1,0 @@
-adapter_check_mk.py

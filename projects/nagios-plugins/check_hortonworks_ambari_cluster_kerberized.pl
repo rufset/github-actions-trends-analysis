@@ -1,1 +1,0 @@
-check_ambari_cluster_kerberized.pl

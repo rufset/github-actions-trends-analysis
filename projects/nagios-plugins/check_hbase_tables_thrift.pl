@@ -1,1 +1,0 @@
-check_hbase_tables.pl

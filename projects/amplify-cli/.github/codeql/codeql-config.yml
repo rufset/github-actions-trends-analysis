@@ -1,4 +1,0 @@
-paths-ignore:
-  - packages/**/__tests__/**
-  - packages/**/*.test.*
-  - packages/**/__e2e__/**

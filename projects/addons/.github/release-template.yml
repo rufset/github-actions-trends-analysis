@@ -1,8 +1,0 @@
-template: |
-  ## Release Notes
-
-  $CHANGES
-
-  ## Thanks to our Contributors
-
-  $CONTRIBUTORS

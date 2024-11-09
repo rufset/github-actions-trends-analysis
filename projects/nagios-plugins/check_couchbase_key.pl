@@ -1,1 +1,0 @@
-check_memcached_key.pl

@@ -1,1 +1,0 @@
-./packages/ganache/README.md

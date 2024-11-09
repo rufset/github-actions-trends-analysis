@@ -1,8 +1,0 @@
-changelog:
-  categories:
-    - title: Bugs solved
-      labels:
-        - "bug"  
-    - title: Changes and new Features
-      labels:
-        - "*"

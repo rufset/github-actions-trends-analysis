@@ -1,3 +1,0 @@
-comment: 'Hello, thank you for contributing! It looks like your PR introduces new code that has not been tested, please make to add some tests as soon as you can.',
-fileExtensions: ['.ts', '.js']
-testDir: 'test'

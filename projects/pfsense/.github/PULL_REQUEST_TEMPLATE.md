@@ -1,2 +1,0 @@
-- [ ] Redmine Issue: https://redmine.pfsense.org/issues/NNNN
-- [ ] Ready for review

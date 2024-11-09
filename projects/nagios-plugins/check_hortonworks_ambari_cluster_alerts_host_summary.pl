@@ -1,1 +1,0 @@
-check_ambari_cluster_alerts_host_summary.pl
