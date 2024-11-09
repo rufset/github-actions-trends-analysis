@@ -73,3 +73,5 @@ Thumbs.db
 Rplots.*
 projects/.DS_Store
 *mini*
+.Rhistory
+*.Rproj
