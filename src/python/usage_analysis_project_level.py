@@ -40,7 +40,7 @@ def calculate_github_actions_usage(csv_folder, csv_filename):
     return result
 
 
-calculate_github_actions_usage('analysis data', 'enriched_analysis.csv')
+calculate_github_actions_usage('./data/analysis_data', 'enriched_analysis.csv')
 
 
 #function for calculating steps etc
@@ -91,5 +91,5 @@ def calculate_github_actions_statistics(csv_folder, csv_filename):
     }
 
 
-calculate_github_actions_statistics('analysis data', 'enriched_analysis.csv')
+calculate_github_actions_statistics('./data/analysis data', 'enriched_analysis.csv')
 
