@@ -1,6 +1,6 @@
 # Replication Package 
 
-This is a replication package for the paper **AChecking in with the Action: Revisiting GitHub Action Usage in the Wild**. The package contains files to allow investigation of data collection instruments and data analysis. 
+This is a replication package for the paper **Checking in with the Action: Revisiting GitHub Action Usage in the Wild**. The package contains files to allow investigation of data collection instruments and data analysis. 
 
 This package include the following structure:
 
