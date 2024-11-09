@@ -5,14 +5,10 @@ import json
 import pandas as pd
 
 # Set the parent directory containing the project folders
-parent_directory = "/Users/e9linda/Source/github-actions-trends-analysis/projects"
-#parent_directory = "/Users/gomesf/Documents/code_projects/research_projects/github-actions-trends-analysis-main/projects" # Replace with the actual path to your projects directory
-#output_file = "mini.csv"
-output_file = "workflow_analysis.csv"
-enriched_output_file = "enriched_analysis.csv"
-#enriched_output_file = "miniTest.csv"
-json_files = ['repositories.json']
-#json_files = ['repo1.json', 'repo2.json']
+parent_directory = "./data/projects"
+output_file = "./data/output/workflow_analysis.csv"
+enriched_output_file = "./data/output/enriched_analysis.csv"
+json_files = ['./data/repositories.json']
 
 #The code now: iterates over folders, creates a CSV and then enriches with data from the json. If data not available in CSV but is in JSON it adds the data.
 #I think the code should instead: add data from the seart query response json to CSV, then enrich this with data from folders IF there is anything there. If there isn't then they're not utilizing any actions. 

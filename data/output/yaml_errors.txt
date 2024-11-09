@@ -1,0 +1,4 @@
+Error parsing ./data/mini/30-seconds-of-cpp/.github/workflows/main.yml: while parsing a block mapping
+  in "./data/mini/30-seconds-of-cpp/.github/workflows/main.yml", line 4, column 3
+expected <block end>, but found '-'
+  in "./data/mini/30-seconds-of-cpp/.github/workflows/main.yml", line 8, column 3

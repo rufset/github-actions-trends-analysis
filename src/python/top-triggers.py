@@ -5,7 +5,7 @@ import re
 from collections import Counter
 import csv
 
-#Stupid YML version 1.1 treats on without quotes as "true".
+# Custom YAML loader to treat `on` as a string even if unquoted since the buillt in yaml loader otherwise interpret it as bool.
 def custom_loader(stream):
     # Define a custom constructor to treat 'on' as strings rather than booleans
     def construct_yaml_str(self, node):
@@ -89,8 +89,8 @@ def extract_on_event_counts(base_folder, on_event_output_csv, error_log, no_on_l
 
 # Run the function with specified paths
 extract_on_event_counts(
-    base_folder='projects',
-    on_event_output_csv='on_event_counts.csv',
-    error_log='yaml_errors.txt',
-    no_on_log='no_on_key_projects.txt'
+    base_folder='./data/projects',
+    on_event_output_csv='./data/output/on_event_counts.csv',
+    error_log='./data/output/yaml_errors.txt',
+    no_on_log='./data/output/no_on_key_projects.txt'
 )

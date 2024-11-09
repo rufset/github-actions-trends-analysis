@@ -4,7 +4,7 @@ from yaml.resolver import Resolver
 import csv
 from collections import Counter
 
-# Custom YAML loader to treat `on` as a string even if unquoted
+# Custom YAML loader to treat `on` as a string even if unquoted since the buillt in yaml loader otherwise interpret it as bool.
 def custom_loader(stream):
     def construct_yaml_str(self, node):
         return self.construct_scalar(node)
@@ -22,7 +22,7 @@ def custom_loader(stream):
 
     return yaml.load(stream, Loader=yaml.SafeLoader)
 
-# Main function
+# Main function, finds the event types that occurrs in a project
 def extract_on_event_counts(base_folder, on_event_output_csv, error_log, no_on_log):
     on_event_counter = Counter()
 
@@ -86,8 +86,8 @@ def extract_on_event_counts(base_folder, on_event_output_csv, error_log, no_on_l
 
 # Run the function
 extract_on_event_counts(
-    base_folder='projects',
-    on_event_output_csv='on_event_counts_project.csv',
-    error_log='yaml_errors_project.txt',
-    no_on_log='no_on_key_projects_projects.txt'
+    base_folder='./data/projects',
+    on_event_output_csv='./data/output/on_event_counts_project.csv',
+    error_log='./data/output/yaml_errors_project.txt',
+    no_on_log='./data/output/no_on_key_projects_projects.txt'
 )

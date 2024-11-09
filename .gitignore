@@ -66,9 +66,10 @@ Thumbs.db
 *.gz
 *.blg
 *.fdb_latexmk
-main.pdf
 *.bbl
-inlaga.pdf
+
+#project specific stuff
 .Rproj.user
 Rplots.*
 projects/.DS_Store
+*mini*
