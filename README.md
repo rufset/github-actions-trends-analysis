@@ -11,7 +11,8 @@ This package include the following structure:
 |   +-- output/                                # files that are the output of the analysis scripts
 |   +-- projects/                              # downloaded .github-folder if such existed for project
 |   +-- deleted.json                           # the removed repositories from the search results
-|   +-- repositories.json                      # the final dataset
+|   +-- repositories.json                      # the final dataset (not included in the anonymous version)
+|   +-- repositories.json.zip                  # the final dataset in a zip file due to anonymisation has a file size limit
 |
 +-- figs/                                      # figs that are the output of the analysis scripts
 | 
@@ -22,3 +23,4 @@ This package include the following structure:
 |
 +
 ```
+**Make sure there is an Unzipped version of the repositories.json before attempting to run any scripts**
